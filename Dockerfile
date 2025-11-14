@@ -41,4 +41,4 @@ ENV PATH=/home/appuser/.local/bin:$PATH \
 EXPOSE 5000
 
 # Run with gunicorn (port from environment variable)
-CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 --timeout 60 --access-logfile - --error-logfile - app:app
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 --timeout 60 --access-logfile - --error-logfile - app:app"]
