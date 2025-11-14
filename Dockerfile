@@ -30,6 +30,9 @@ COPY --from=builder /root/.local /home/appuser/.local
 # Copy application code
 COPY --chown=appuser:appuser . .
 
+# Make start script executable
+RUN chmod +x start.sh
+
 # Switch to non-root user
 USER appuser
 
@@ -40,5 +43,5 @@ ENV PATH=/home/appuser/.local/bin:$PATH \
 # Expose port
 EXPOSE 5000
 
-# Run with gunicorn (port from environment variable)
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 --timeout 60 --access-logfile - --error-logfile - app:app"]
+# Run with startup script
+CMD ["./start.sh"]
