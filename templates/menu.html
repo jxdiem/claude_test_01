@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Principale</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 50%, #16a085 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            padding: 60px;
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            margin-bottom: 50px;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .app-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid transparent;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            z-index: 0;
+        }
+
+        .app-card.farm::before {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .app-card:hover::before {
+            opacity: 1;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .app-card:hover .card-content {
+            color: white;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+            transition: color 0.4s;
+        }
+
+        .app-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            transition: color 0.4s;
+        }
+
+        .app-card:hover .app-title {
+            color: white;
+        }
+
+        .app-description {
+            font-size: 1rem;
+            color: #7f8c8d;
+            line-height: 1.6;
+            transition: color 0.4s;
+        }
+
+        .app-card:hover .app-description {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .features {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+            transition: border-color 0.4s;
+        }
+
+        .app-card:hover .features {
+            border-top-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .feature-item {
+            font-size: 0.9rem;
+            color: #95a5a6;
+            margin: 5px 0;
+            transition: color 0.4s;
+        }
+
+        .app-card:hover .feature-item {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .app-card {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .app-card:nth-child(2) {
+            animation-delay: 0.2s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Benvenuto</h1>
+        <p class="subtitle">Scegli l'applicazione da utilizzare</p>
+
+        <div class="apps-grid">
+            <a href="/numbers" class="app-card">
+                <div class="card-content">
+                    <span class="app-icon">🔢</span>
+                    <h2 class="app-title">Number Storage</h2>
+                    <p class="app-description">
+                        Applicazione semplice per memorizzare e gestire numeri
+                    </p>
+                    <div class="features">
+                        <div class="feature-item">✓ Aggiungi numeri</div>
+                        <div class="feature-item">✓ Visualizza storico</div>
+                        <div class="feature-item">✓ Elimina voci</div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/farm" class="app-card farm">
+                <div class="card-content">
+                    <span class="app-icon">🚜</span>
+                    <h2 class="app-title">Gestionale Agricolo</h2>
+                    <p class="app-description">
+                        Sistema completo per la gestione della tua azienda agricola
+                    </p>
+                    <div class="features">
+                        <div class="feature-item">✓ Terreni e colture</div>
+                        <div class="feature-item">✓ Mezzi e attrezzature</div>
+                        <div class="feature-item">✓ Animali e bestiame</div>
+                        <div class="feature-item">✓ Gestione completa</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionale Agricolo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2ecc71;
+            --primary-dark: #27ae60;
+            --secondary-color: #3498db;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #27ae60;
+            --dark-bg: #2c3e50;
+            --light-bg: #ecf0f1;
+            --sidebar-width: 250px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f6fa;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #34495e 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            padding-left: 30px;
+        }
+
+        .nav-item.active {
+            background: rgba(46, 204, 113, 0.2);
+            border-left-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            font-size: 1.3rem;
+        }
+
+        .back-button {
+            padding: 15px 25px;
+            margin: 10px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-5px);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .page-header h2 {
+            font-size: 2rem;
+            color: var(--dark-bg);
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+        }
+
+        /* SECTIONS */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-bg);
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            color: #95a5a6;
+            font-size: 0.85rem;
+        }
+
+        .stat-card.success { border-left-color: var(--success-color); }
+        .stat-card.warning { border-left-color: var(--warning-color); }
+        .stat-card.danger { border-left-color: var(--danger-color); }
+        .stat-card.info { border-left-color: var(--secondary-color); }
+
+        /* BUTTONS */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* DATA TABLE */
+        .data-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-header h3 {
+            font-size: 1.5rem;
+            color: var(--dark-bg);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table thead {
+            background: var(--light-bg);
+        }
+
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-bg);
+            border-bottom: 2px solid #ddd;
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.8rem;
+            color: var(--dark-bg);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-bg);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        /* NOTIFICATION */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            min-width: 300px;
+            animation: slideInRight 0.3s;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification.show {
+            display: flex;
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .nav-item span:not(.icon) {
+                display: none;
+            }
+
+            .sidebar-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .sidebar-header p {
+                display: none;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><span>🚜</span><span>AgroManage</span></h1>
+            <p>Sistema di Gestione Aziendale</p>
+        </div>
+
+        <a href="/" class="back-button">← Torna al Menu</a>
+
+        <nav class="nav-menu">
+            <div class="nav-item active" data-section="dashboard">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-section="terreni">
+                <span class="icon">🌾</span>
+                <span>Terreni</span>
+            </div>
+            <div class="nav-item" data-section="trattori">
+                <span class="icon">🚜</span>
+                <span>Trattori</span>
+            </div>
+            <div class="nav-item" data-section="attrezzi">
+                <span class="icon">🔧</span>
+                <span>Attrezzi</span>
+            </div>
+            <div class="nav-item" data-section="animali">
+                <span class="icon">🐄</span>
+                <span>Animali</span>
+            </div>
+            <div class="nav-item" data-section="colture">
+                <span class="icon">🌱</span>
+                <span>Colture</span>
+            </div>
+            <div class="nav-item" data-section="personale">
+                <span class="icon">👥</span>
+                <span>Personale</span>
+            </div>
+            <div class="nav-item" data-section="magazzino">
+                <span class="icon">📦</span>
+                <span>Magazzino</span>
+            </div>
+            <div class="nav-item" data-section="manutenzioni">
+                <span class="icon">🔨</span>
+                <span>Manutenzioni</span>
+            </div>
+            <div class="nav-item" data-section="finanze">
+                <span class="icon">💰</span>
+                <span>Finanze</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- DASHBOARD SECTION -->
+        <div class="section active" id="dashboard">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <p>Panoramica generale della tua azienda agricola</p>
+            </div>
+
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be loaded here -->
+            </div>
+        </div>
+
+        <!-- TERRENI SECTION -->
+        <div class="section" id="terreni">
+            <div class="page-header">
+                <h2>Gestione Terreni</h2>
+                <p>Amministra gli appezzamenti e i terreni aziendali</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Elenco Terreni</h3>
+                    <button class="btn btn-primary" onclick="openModal('terreniModal')">
+                        <span>+</span> Aggiungi Terreno
+                    </button>
+                </div>
+                <div id="terreniTable"></div>
+            </div>
+        </div>
+
+        <!-- TRATTORI SECTION -->
+        <div class="section" id="trattori">
+            <div class="page-header">
+                <h2>Gestione Trattori</h2>
+                <p>Mezzi agricoli e macchine operatrici</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Elenco Trattori e Mezzi</h3>
+                    <button class="btn btn-primary" onclick="openModal('trattoriModal')">
+                        <span>+</span> Aggiungi Trattore
+                    </button>
+                </div>
+                <div id="trattoriTable"></div>
+            </div>
+        </div>
+
+        <!-- ATTREZZI SECTION -->
+        <div class="section" id="attrezzi">
+            <div class="page-header">
+                <h2>Gestione Attrezzi</h2>
+                <p>Attrezzature e strumenti agricoli</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Elenco Attrezzi</h3>
+                    <button class="btn btn-primary" onclick="openModal('attrezziModal')">
+                        <span>+</span> Aggiungi Attrezzo
+                    </button>
+                </div>
+                <div id="attrezziTable"></div>
+            </div>
+        </div>
+
+        <!-- ANIMALI SECTION -->
+        <div class="section" id="animali">
+            <div class="page-header">
+                <h2>Gestione Bestiame</h2>
+                <p>Registrazione e monitoraggio degli animali</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Elenco Animali</h3>
+                    <button class="btn btn-primary" onclick="openModal('animaliModal')">
+                        <span>+</span> Aggiungi Animale
+                    </button>
+                </div>
+                <div id="animaliTable"></div>
+            </div>
+        </div>
+
+        <!-- COLTURE SECTION -->
+        <div class="section" id="colture">
+            <div class="page-header">
+                <h2>Gestione Colture</h2>
+                <p>Pianificazione e monitoraggio delle coltivazioni</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Elenco Colture</h3>
+                    <button class="btn btn-primary" onclick="openModal('coltureModal')">
+                        <span>+</span> Aggiungi Coltura
+                    </button>
+                </div>
+                <div id="coltureTable"></div>
+            </div>
+        </div>
+
+        <!-- PERSONALE SECTION -->
+        <div class="section" id="personale">
+            <div class="page-header">
+                <h2>Gestione Personale</h2>
+                <p>Dipendenti e collaboratori</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Elenco Dipendenti</h3>
+                    <button class="btn btn-primary" onclick="openModal('personaleModal')">
+                        <span>+</span> Aggiungi Dipendente
+                    </button>
+                </div>
+                <div id="personaleTable"></div>
+            </div>
+        </div>
+
+        <!-- MAGAZZINO SECTION -->
+        <div class="section" id="magazzino">
+            <div class="page-header">
+                <h2>Gestione Magazzino</h2>
+                <p>Sementi, fertilizzanti e fitofarmaci</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Inventario Magazzino</h3>
+                    <button class="btn btn-primary" onclick="openModal('magazzinoModal')">
+                        <span>+</span> Aggiungi Prodotto
+                    </button>
+                </div>
+                <div id="magazzinoTable"></div>
+            </div>
+        </div>
+
+        <!-- MANUTENZIONI SECTION -->
+        <div class="section" id="manutenzioni">
+            <div class="page-header">
+                <h2>Registro Manutenzioni</h2>
+                <p>Interventi e manutenzioni effettuate</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Storico Manutenzioni</h3>
+                    <button class="btn btn-primary" onclick="openModal('manutenzioniModal')">
+                        <span>+</span> Registra Manutenzione
+                    </button>
+                </div>
+                <div id="manutenzioniTable"></div>
+            </div>
+        </div>
+
+        <!-- FINANZE SECTION -->
+        <div class="section" id="finanze">
+            <div class="page-header">
+                <h2>Gestione Finanziaria</h2>
+                <p>Spese, ricavi e bilancio aziendale</p>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>Movimenti Finanziari</h3>
+                    <button class="btn btn-primary" onclick="openModal('finanzeModal')">
+                        <span>+</span> Registra Operazione
+                    </button>
+                </div>
+                <div id="finanzeTable"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- TERRENI MODAL -->
+    <div class="modal" id="terreniModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuovo Terreno</h3>
+            </div>
+            <form id="terreniForm">
+                <div class="form-group">
+                    <label>Nome Terreno *</label>
+                    <input type="text" name="nome" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Superficie (ettari) *</label>
+                        <input type="number" name="superficie_ettari" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Terreno</label>
+                        <select name="tipo_terreno">
+                            <option value="">Seleziona...</option>
+                            <option value="Seminativo">Seminativo</option>
+                            <option value="Pascolo">Pascolo</option>
+                            <option value="Frutteto">Frutteto</option>
+                            <option value="Vigneto">Vigneto</option>
+                            <option value="Oliveto">Oliveto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ubicazione</label>
+                    <input type="text" name="ubicazione">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Foglio</label>
+                        <input type="text" name="foglio">
+                    </div>
+                    <div class="form-group">
+                        <label>Particella</label>
+                        <input type="text" name="particella">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Subalterno</label>
+                    <input type="text" name="subalterno">
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('terreniModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TRATTORI MODAL -->
+    <div class="modal" id="trattoriModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuovo Trattore/Mezzo</h3>
+            </div>
+            <form id="trattoriForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Marca *</label>
+                        <input type="text" name="marca" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Modello *</label>
+                        <input type="text" name="modello" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Anno</label>
+                        <input type="number" name="anno" min="1900" max="2100">
+                    </div>
+                    <div class="form-group">
+                        <label>Targa</label>
+                        <input type="text" name="targa">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Numero Telaio</label>
+                    <input type="text" name="numero_telaio">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Potenza (CV)</label>
+                        <input type="number" name="potenza_cv">
+                    </div>
+                    <div class="form-group">
+                        <label>Ore Lavoro</label>
+                        <input type="number" name="ore_lavoro" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data Acquisto</label>
+                        <input type="date" name="data_acquisto">
+                    </div>
+                    <div class="form-group">
+                        <label>Costo Acquisto (€)</label>
+                        <input type="number" name="costo_acquisto" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Stato</label>
+                    <select name="stato">
+                        <option value="Operativo">Operativo</option>
+                        <option value="In Manutenzione">In Manutenzione</option>
+                        <option value="Fuori Servizio">Fuori Servizio</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('trattoriModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ATTREZZI MODAL -->
+    <div class="modal" id="attrezziModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuovo Attrezzo</h3>
+            </div>
+            <form id="attrezziForm">
+                <div class="form-group">
+                    <label>Nome Attrezzo *</label>
+                    <input type="text" name="nome" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select name="tipo">
+                            <option value="">Seleziona...</option>
+                            <option value="Aratro">Aratro</option>
+                            <option value="Erpice">Erpice</option>
+                            <option value="Seminatrice">Seminatrice</option>
+                            <option value="Spandiconcime">Spandiconcime</option>
+                            <option value="Irroratrice">Irroratrice</option>
+                            <option value="Mietitrebbia">Mietitrebbia</option>
+                            <option value="Rimorchio">Rimorchio</option>
+                            <option value="Altro">Altro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" name="marca">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Modello</label>
+                        <input type="text" name="modello">
+                    </div>
+                    <div class="form-group">
+                        <label>Anno Acquisto</label>
+                        <input type="number" name="anno_acquisto" min="1900" max="2100">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Costo Acquisto (€)</label>
+                        <input type="number" name="costo_acquisto" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Stato</label>
+                        <select name="stato">
+                            <option value="Buono">Buono</option>
+                            <option value="Discreto">Discreto</option>
+                            <option value="Da Riparare">Da Riparare</option>
+                            <option value="Fuori Uso">Fuori Uso</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ultima Manutenzione</label>
+                    <input type="date" name="ultima_manutenzione">
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('attrezziModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ANIMALI MODAL -->
+    <div class="modal" id="animaliModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuovo Animale</h3>
+            </div>
+            <form id="animaliForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Specie *</label>
+                        <select name="specie" required>
+                            <option value="">Seleziona...</option>
+                            <option value="Bovino">Bovino</option>
+                            <option value="Ovino">Ovino</option>
+                            <option value="Suino">Suino</option>
+                            <option value="Caprino">Caprino</option>
+                            <option value="Equino">Equino</option>
+                            <option value="Pollame">Pollame</option>
+                            <option value="Altro">Altro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Razza</label>
+                        <input type="text" name="razza">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Identificativo</label>
+                        <input type="text" name="identificativo" placeholder="es. IT123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Nascita</label>
+                        <input type="date" name="data_nascita">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sesso</label>
+                        <select name="sesso">
+                            <option value="">Seleziona...</option>
+                            <option value="Maschio">Maschio</option>
+                            <option value="Femmina">Femmina</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Peso (kg)</label>
+                        <input type="number" name="peso_kg" step="0.1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Stato Salute</label>
+                    <select name="stato_salute">
+                        <option value="Sano">Sano</option>
+                        <option value="In Cura">In Cura</option>
+                        <option value="Malato">Malato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('animaliModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- COLTURE MODAL -->
+    <div class="modal" id="coltureModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuova Coltura</h3>
+            </div>
+            <form id="coltureForm">
+                <div class="form-group">
+                    <label>Terreno *</label>
+                    <select name="terreno_id" id="terreno_select" required>
+                        <option value="">Seleziona terreno...</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo Coltura *</label>
+                        <input type="text" name="tipo_coltura" required placeholder="es. Grano, Mais, Pomodori">
+                    </div>
+                    <div class="form-group">
+                        <label>Varietà</label>
+                        <input type="text" name="varieta">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data Semina</label>
+                        <input type="date" name="data_semina">
+                    </div>
+                    <div class="form-group">
+                        <label>Raccolta Prevista</label>
+                        <input type="date" name="data_raccolta_prevista">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Raccolta Effettiva</label>
+                        <input type="date" name="data_raccolta_effettiva">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantità Raccolta (kg)</label>
+                        <input type="number" name="quantita_raccolta_kg" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Stato</label>
+                    <select name="stato">
+                        <option value="In corso">In corso</option>
+                        <option value="Completata">Completata</option>
+                        <option value="Fallita">Fallita</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('coltureModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PERSONALE MODAL -->
+    <div class="modal" id="personaleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuovo Dipendente</h3>
+            </div>
+            <form id="personaleForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome *</label>
+                        <input type="text" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cognome *</label>
+                        <input type="text" name="cognome" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ruolo</label>
+                    <input type="text" name="ruolo" placeholder="es. Bracciante, Trattorista">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Telefono</label>
+                        <input type="tel" name="telefono">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data Assunzione</label>
+                        <input type="date" name="data_assunzione">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Contratto</label>
+                        <select name="tipo_contratto">
+                            <option value="">Seleziona...</option>
+                            <option value="Determinato">Determinato</option>
+                            <option value="Indeterminato">Indeterminato</option>
+                            <option value="Stagionale">Stagionale</option>
+                            <option value="Occasionale">Occasionale</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Retribuzione Mensile (€)</label>
+                    <input type="number" name="retribuzione_mensile" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('personaleModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAGAZZINO MODAL -->
+    <div class="modal" id="magazzinoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuovo Prodotto</h3>
+            </div>
+            <form id="magazzinoForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Categoria *</label>
+                        <select name="categoria" required>
+                            <option value="">Seleziona...</option>
+                            <option value="Sementi">Sementi</option>
+                            <option value="Fertilizzanti">Fertilizzanti</option>
+                            <option value="Fitofarmaci">Fitofarmaci</option>
+                            <option value="Mangimi">Mangimi</option>
+                            <option value="Carburante">Carburante</option>
+                            <option value="Altro">Altro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome Prodotto *</label>
+                        <input type="text" name="nome_prodotto" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Marca</label>
+                    <input type="text" name="marca">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantità *</label>
+                        <input type="number" name="quantita" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unità di Misura</label>
+                        <select name="unita_misura">
+                            <option value="kg">kg</option>
+                            <option value="litri">litri</option>
+                            <option value="quintali">quintali</option>
+                            <option value="pezzi">pezzi</option>
+                            <option value="sacchi">sacchi</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data Acquisto</label>
+                        <input type="date" name="data_acquisto">
+                    </div>
+                    <div class="form-group">
+                        <label>Costo Unitario (€)</label>
+                        <input type="number" name="costo_unitario" step="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Scadenza</label>
+                        <input type="date" name="scadenza">
+                    </div>
+                    <div class="form-group">
+                        <label>Fornitore</label>
+                        <input type="text" name="fornitore">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('magazzinoModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MANUTENZIONI MODAL -->
+    <div class="modal" id="manutenzioniModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuova Manutenzione</h3>
+            </div>
+            <form id="manutenzioniForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo Oggetto *</label>
+                        <select name="tipo_oggetto" required>
+                            <option value="">Seleziona...</option>
+                            <option value="Trattore">Trattore</option>
+                            <option value="Attrezzo">Attrezzo</option>
+                            <option value="Impianto">Impianto</option>
+                            <option value="Edificio">Edificio</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ID Oggetto *</label>
+                        <input type="number" name="oggetto_id" required placeholder="ID dell'oggetto">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data Manutenzione *</label>
+                        <input type="date" name="data_manutenzione" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Manutenzione</label>
+                        <select name="tipo_manutenzione">
+                            <option value="">Seleziona...</option>
+                            <option value="Ordinaria">Ordinaria</option>
+                            <option value="Straordinaria">Straordinaria</option>
+                            <option value="Riparazione">Riparazione</option>
+                            <option value="Revisione">Revisione</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrizione</label>
+                    <textarea name="descrizione" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Costo (€)</label>
+                        <input type="number" name="costo" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Eseguita Da</label>
+                        <input type="text" name="eseguita_da">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Prossima Manutenzione</label>
+                    <input type="date" name="prossima_manutenzione">
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('manutenzioniModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FINANZE MODAL -->
+    <div class="modal" id="finanzeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuova Operazione Finanziaria</h3>
+            </div>
+            <form id="finanzeForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select name="tipo" required>
+                            <option value="">Seleziona...</option>
+                            <option value="Spesa">Spesa</option>
+                            <option value="Ricavo">Ricavo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria *</label>
+                        <select name="categoria" required>
+                            <option value="">Seleziona...</option>
+                            <option value="Carburante">Carburante</option>
+                            <option value="Sementi">Sementi</option>
+                            <option value="Fertilizzanti">Fertilizzanti</option>
+                            <option value="Manodopera">Manodopera</option>
+                            <option value="Manutenzioni">Manutenzioni</option>
+                            <option value="Vendita Prodotti">Vendita Prodotti</option>
+                            <option value="Contributi">Contributi</option>
+                            <option value="Altro">Altro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrizione *</label>
+                    <input type="text" name="descrizione" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Importo (€) *</label>
+                        <input type="number" name="importo" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Operazione *</label>
+                        <input type="date" name="data_operazione" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Metodo Pagamento</label>
+                        <select name="metodo_pagamento">
+                            <option value="">Seleziona...</option>
+                            <option value="Contanti">Contanti</option>
+                            <option value="Bonifico">Bonifico</option>
+                            <option value="Carta">Carta</option>
+                            <option value="Assegno">Assegno</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Riferimento</label>
+                        <input type="text" name="riferimento" placeholder="es. Fattura #123">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea name="note" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('finanzeModal')">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION -->
+    <div class="notification" id="notification">
+        <span id="notificationMessage"></span>
+    </div>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const section = item.getAttribute('data-section');
+
+                // Update active nav item
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                // Show section
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(section).classList.add('active');
+
+                // Load data for section
+                loadSectionData(section);
+            });
+        });
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+
+            // Load terreni for colture modal
+            if (modalId === 'coltureModal') {
+                loadTerreniSelect();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            document.getElementById(modalId.replace('Modal', 'Form')).reset();
+        }
+
+        // Notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const messageEl = document.getElementById('notificationMessage');
+
+            messageEl.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Load terreni for select
+        async function loadTerreniSelect() {
+            try {
+                const response = await fetch('/api/terreni');
+                const terreni = await response.json();
+
+                const select = document.getElementById('terreno_select');
+                select.innerHTML = '<option value="">Seleziona terreno...</option>';
+
+                terreni.forEach(t => {
+                    select.innerHTML += `<option value="${t.id}">${t.nome} (${t.superficie_ettari} ha)</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading terreni:', error);
+            }
+        }
+
+        // Form submissions
+        async function handleFormSubmit(formId, endpoint, modalId, reloadSection) {
+            const form = document.getElementById(formId);
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showNotification(result.message, 'success');
+                        closeModal(modalId);
+                        loadSectionData(reloadSection);
+                        loadStats();
+                    } else {
+                        showNotification(result.error || 'Errore durante il salvataggio', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Errore di connessione', 'error');
+                }
+            });
+        }
+
+        // Delete item
+        async function deleteItem(endpoint, id, section) {
+            if (!confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${endpoint}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification(result.message, 'success');
+                    loadSectionData(section);
+                    loadStats();
+                } else {
+                    showNotification(result.error || 'Errore durante l\'eliminazione', 'error');
+                }
+            } catch (error) {
+                showNotification('Errore di connessione', 'error');
+            }
+        }
+
+        // Load section data
+        async function loadSectionData(section) {
+            switch(section) {
+                case 'dashboard':
+                    loadStats();
+                    break;
+                case 'terreni':
+                    loadTerreni();
+                    break;
+                case 'trattori':
+                    loadTrattori();
+                    break;
+                case 'attrezzi':
+                    loadAttrezzi();
+                    break;
+                case 'animali':
+                    loadAnimali();
+                    break;
+                case 'colture':
+                    loadColture();
+                    break;
+                case 'personale':
+                    loadPersonale();
+                    break;
+                case 'magazzino':
+                    loadMagazzino();
+                    break;
+                case 'manutenzioni':
+                    loadManutenzioni();
+                    break;
+                case 'finanze':
+                    loadFinanze();
+                    break;
+            }
+        }
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+
+                const grid = document.getElementById('statsGrid');
+                const bilancio = stats.ricavi_totali - stats.spese_totali;
+
+                grid.innerHTML = `
+                    <div class="stat-card">
+                        <h3>Terreni</h3>
+                        <div class="value">${stats.terreni_count}</div>
+                        <div class="label">${stats.terreni_superficie.toFixed(2)} ettari totali</div>
+                    </div>
+                    <div class="stat-card info">
+                        <h3>Trattori</h3>
+                        <div class="value">${stats.trattori_count}</div>
+                        <div class="label">Mezzi disponibili</div>
+                    </div>
+                    <div class="stat-card info">
+                        <h3>Attrezzi</h3>
+                        <div class="value">${stats.attrezzi_count}</div>
+                        <div class="label">Attrezzature</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Animali</h3>
+                        <div class="value">${stats.animali_count}</div>
+                        <div class="label">Capi di bestiame</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <h3>Colture Attive</h3>
+                        <div class="value">${stats.colture_attive}</div>
+                        <div class="label">In corso</div>
+                    </div>
+                    <div class="stat-card info">
+                        <h3>Personale</h3>
+                        <div class="value">${stats.personale_count}</div>
+                        <div class="label">Dipendenti</div>
+                    </div>
+                    <div class="stat-card success">
+                        <h3>Ricavi Totali</h3>
+                        <div class="value">€${stats.ricavi_totali.toFixed(2)}</div>
+                        <div class="label">Entrate</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <h3>Spese Totali</h3>
+                        <div class="value">€${stats.spese_totali.toFixed(2)}</div>
+                        <div class="label">Uscite</div>
+                    </div>
+                    <div class="stat-card ${bilancio >= 0 ? 'success' : 'danger'}">
+                        <h3>Bilancio</h3>
+                        <div class="value">€${bilancio.toFixed(2)}</div>
+                        <div class="label">${bilancio >= 0 ? 'Positivo' : 'Negativo'}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load terreni
+        async function loadTerreni() {
+            try {
+                const response = await fetch('/api/terreni');
+                const terreni = await response.json();
+
+                const container = document.getElementById('terreniTable');
+
+                if (terreni.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🌾</div><p>Nessun terreno registrato. Aggiungi il primo terreno!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Nome</th><th>Superficie</th><th>Tipo</th><th>Ubicazione</th><th>Catasto</th><th>Azioni</th></tr></thead><tbody>';
+
+                terreni.forEach(t => {
+                    html += `
+                        <tr>
+                            <td><strong>${t.nome}</strong></td>
+                            <td>${t.superficie_ettari} ha</td>
+                            <td>${t.tipo_terreno || '-'}</td>
+                            <td>${t.ubicazione || '-'}</td>
+                            <td>${t.foglio || '-'} / ${t.particella || '-'}</td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/terreni', ${t.id}, 'terreni')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading terreni:', error);
+            }
+        }
+
+        // Load trattori
+        async function loadTrattori() {
+            try {
+                const response = await fetch('/api/trattori');
+                const trattori = await response.json();
+
+                const container = document.getElementById('trattoriTable');
+
+                if (trattori.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🚜</div><p>Nessun trattore registrato. Aggiungi il primo mezzo!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Marca/Modello</th><th>Anno</th><th>Targa</th><th>Potenza</th><th>Ore Lavoro</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>';
+
+                trattori.forEach(t => {
+                    const statoClass = t.stato === 'Operativo' ? 'success' : (t.stato === 'In Manutenzione' ? 'warning' : 'danger');
+                    html += `
+                        <tr>
+                            <td><strong>${t.marca} ${t.modello}</strong></td>
+                            <td>${t.anno || '-'}</td>
+                            <td>${t.targa || '-'}</td>
+                            <td>${t.potenza_cv ? t.potenza_cv + ' CV' : '-'}</td>
+                            <td>${t.ore_lavoro || 0} ore</td>
+                            <td><span class="badge badge-${statoClass}">${t.stato}</span></td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/trattori', ${t.id}, 'trattori')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading trattori:', error);
+            }
+        }
+
+        // Load attrezzi
+        async function loadAttrezzi() {
+            try {
+                const response = await fetch('/api/attrezzi');
+                const attrezzi = await response.json();
+
+                const container = document.getElementById('attrezziTable');
+
+                if (attrezzi.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🔧</div><p>Nessun attrezzo registrato. Aggiungi il primo attrezzo!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Nome</th><th>Tipo</th><th>Marca/Modello</th><th>Anno</th><th>Stato</th><th>Ultima Manutenzione</th><th>Azioni</th></tr></thead><tbody>';
+
+                attrezzi.forEach(a => {
+                    const statoClass = a.stato === 'Buono' ? 'success' : (a.stato === 'Discreto' ? 'warning' : 'danger');
+                    html += `
+                        <tr>
+                            <td><strong>${a.nome}</strong></td>
+                            <td>${a.tipo || '-'}</td>
+                            <td>${a.marca || ''} ${a.modello || ''}</td>
+                            <td>${a.anno_acquisto || '-'}</td>
+                            <td><span class="badge badge-${statoClass}">${a.stato}</span></td>
+                            <td>${a.ultima_manutenzione || 'Mai'}</td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/attrezzi', ${a.id}, 'attrezzi')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading attrezzi:', error);
+            }
+        }
+
+        // Load animali
+        async function loadAnimali() {
+            try {
+                const response = await fetch('/api/animali');
+                const animali = await response.json();
+
+                const container = document.getElementById('animaliTable');
+
+                if (animali.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🐄</div><p>Nessun animale registrato. Aggiungi il primo animale!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Specie</th><th>Razza</th><th>Identificativo</th><th>Nascita</th><th>Sesso</th><th>Peso</th><th>Salute</th><th>Azioni</th></tr></thead><tbody>';
+
+                animali.forEach(a => {
+                    const saluteClass = a.stato_salute === 'Sano' ? 'success' : (a.stato_salute === 'In Cura' ? 'warning' : 'danger');
+                    html += `
+                        <tr>
+                            <td><strong>${a.specie}</strong></td>
+                            <td>${a.razza || '-'}</td>
+                            <td>${a.identificativo || '-'}</td>
+                            <td>${a.data_nascita || '-'}</td>
+                            <td>${a.sesso || '-'}</td>
+                            <td>${a.peso_kg ? a.peso_kg + ' kg' : '-'}</td>
+                            <td><span class="badge badge-${saluteClass}">${a.stato_salute}</span></td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/animali', ${a.id}, 'animali')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading animali:', error);
+            }
+        }
+
+        // Load colture
+        async function loadColture() {
+            try {
+                const response = await fetch('/api/colture');
+                const colture = await response.json();
+
+                const container = document.getElementById('coltureTable');
+
+                if (colture.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🌱</div><p>Nessuna coltura registrata. Aggiungi la prima coltura!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Terreno</th><th>Coltura</th><th>Varietà</th><th>Semina</th><th>Raccolta Prevista</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>';
+
+                colture.forEach(c => {
+                    const statoClass = c.stato === 'Completata' ? 'success' : (c.stato === 'In corso' ? 'warning' : 'danger');
+                    html += `
+                        <tr>
+                            <td><strong>${c.nome_terreno || 'N/A'}</strong></td>
+                            <td>${c.tipo_coltura}</td>
+                            <td>${c.varieta || '-'}</td>
+                            <td>${c.data_semina || '-'}</td>
+                            <td>${c.data_raccolta_prevista || '-'}</td>
+                            <td><span class="badge badge-${statoClass}">${c.stato}</span></td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/colture', ${c.id}, 'colture')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading colture:', error);
+            }
+        }
+
+        // Load personale
+        async function loadPersonale() {
+            try {
+                const response = await fetch('/api/personale');
+                const personale = await response.json();
+
+                const container = document.getElementById('personaleTable');
+
+                if (personale.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>Nessun dipendente registrato. Aggiungi il primo dipendente!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Nome</th><th>Ruolo</th><th>Telefono</th><th>Email</th><th>Contratto</th><th>Retribuzione</th><th>Azioni</th></tr></thead><tbody>';
+
+                personale.forEach(p => {
+                    html += `
+                        <tr>
+                            <td><strong>${p.nome} ${p.cognome}</strong></td>
+                            <td>${p.ruolo || '-'}</td>
+                            <td>${p.telefono || '-'}</td>
+                            <td>${p.email || '-'}</td>
+                            <td>${p.tipo_contratto || '-'}</td>
+                            <td>${p.retribuzione_mensile ? '€' + p.retribuzione_mensile : '-'}</td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/personale', ${p.id}, 'personale')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading personale:', error);
+            }
+        }
+
+        // Load magazzino
+        async function loadMagazzino() {
+            try {
+                const response = await fetch('/api/magazzino');
+                const magazzino = await response.json();
+
+                const container = document.getElementById('magazzinoTable');
+
+                if (magazzino.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>Nessun prodotto in magazzino. Aggiungi il primo prodotto!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Categoria</th><th>Prodotto</th><th>Marca</th><th>Quantità</th><th>Costo Unit.</th><th>Scadenza</th><th>Fornitore</th><th>Azioni</th></tr></thead><tbody>';
+
+                magazzino.forEach(m => {
+                    html += `
+                        <tr>
+                            <td><span class="badge badge-info">${m.categoria}</span></td>
+                            <td><strong>${m.nome_prodotto}</strong></td>
+                            <td>${m.marca || '-'}</td>
+                            <td>${m.quantita} ${m.unita_misura || ''}</td>
+                            <td>${m.costo_unitario ? '€' + m.costo_unitario : '-'}</td>
+                            <td>${m.scadenza || '-'}</td>
+                            <td>${m.fornitore || '-'}</td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/magazzino', ${m.id}, 'magazzino')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading magazzino:', error);
+            }
+        }
+
+        // Load manutenzioni
+        async function loadManutenzioni() {
+            try {
+                const response = await fetch('/api/manutenzioni');
+                const manutenzioni = await response.json();
+
+                const container = document.getElementById('manutenzioniTable');
+
+                if (manutenzioni.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🔨</div><p>Nessuna manutenzione registrata. Aggiungi la prima manutenzione!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Tipo Oggetto</th><th>ID Oggetto</th><th>Data</th><th>Tipo</th><th>Descrizione</th><th>Costo</th><th>Prossima</th><th>Azioni</th></tr></thead><tbody>';
+
+                manutenzioni.forEach(m => {
+                    html += `
+                        <tr>
+                            <td><span class="badge badge-info">${m.tipo_oggetto}</span></td>
+                            <td>#${m.oggetto_id}</td>
+                            <td>${m.data_manutenzione}</td>
+                            <td>${m.tipo_manutenzione || '-'}</td>
+                            <td>${m.descrizione || '-'}</td>
+                            <td>${m.costo ? '€' + m.costo : '-'}</td>
+                            <td>${m.prossima_manutenzione || '-'}</td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/manutenzioni', ${m.id}, 'manutenzioni')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading manutenzioni:', error);
+            }
+        }
+
+        // Load finanze
+        async function loadFinanze() {
+            try {
+                const response = await fetch('/api/finanze');
+                const finanze = await response.json();
+
+                const container = document.getElementById('finanzeTable');
+
+                if (finanze.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">💰</div><p>Nessuna operazione finanziaria registrata. Aggiungi la prima operazione!</p></div>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrizione</th><th>Importo</th><th>Metodo</th><th>Riferimento</th><th>Azioni</th></tr></thead><tbody>';
+
+                finanze.forEach(f => {
+                    const tipoClass = f.tipo === 'Ricavo' ? 'success' : 'danger';
+                    html += `
+                        <tr>
+                            <td>${f.data_operazione}</td>
+                            <td><span class="badge badge-${tipoClass}">${f.tipo}</span></td>
+                            <td>${f.categoria}</td>
+                            <td>${f.descrizione}</td>
+                            <td><strong>${f.tipo === 'Ricavo' ? '+' : '-'}€${f.importo}</strong></td>
+                            <td>${f.metodo_pagamento || '-'}</td>
+                            <td>${f.riferimento || '-'}</td>
+                            <td><button class="btn btn-danger" onclick="deleteItem('/api/finanze', ${f.id}, 'finanze')">Elimina</button></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading finanze:', error);
+            }
+        }
+
+        // Initialize form handlers
+        handleFormSubmit('terreniForm', '/api/terreni', 'terreniModal', 'terreni');
+        handleFormSubmit('trattoriForm', '/api/trattori', 'trattoriModal', 'trattori');
+        handleFormSubmit('attrezziForm', '/api/attrezzi', 'attrezziModal', 'attrezzi');
+        handleFormSubmit('animaliForm', '/api/animali', 'animaliModal', 'animali');
+        handleFormSubmit('coltureForm', '/api/colture', 'coltureModal', 'colture');
+        handleFormSubmit('personaleForm', '/api/personale', 'personaleModal', 'personale');
+        handleFormSubmit('magazzinoForm', '/api/magazzino', 'magazzinoModal', 'magazzino');
+        handleFormSubmit('manutenzioniForm', '/api/manutenzioni', 'manutenzioniModal', 'manutenzioni');
+        handleFormSubmit('finanzeForm', '/api/finanze', 'finanzeModal', 'finanze');
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        });
+
+        // Load dashboard on page load
+        loadStats();
+    </script>
+</body>
+</html>
