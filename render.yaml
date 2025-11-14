@@ -16,17 +16,15 @@ services:
     # Environment variables
     envVars:
       - key: DATA_DIR
-        value: /data
+        value: /app
       - key: FLASK_ENV
         value: production
       - key: PORT
         value: 5000
 
-    # Persistent disk for SQLite database
-    disk:
-      name: farm-data
-      mountPath: /data
-      sizeGB: 1  # Free tier allows up to 1GB
+    # Note: Persistent disks are not available in free tier
+    # Database will be ephemeral (reset on each deploy)
+    # For persistent storage, consider upgrading to paid plan or use Railway/Fly.io
 
     # Auto-deploy on push to main
     autoDeploy: true
