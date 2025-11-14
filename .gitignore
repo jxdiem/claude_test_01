@@ -23,3 +23,6 @@ ENV/
 # Flask
 instance/
 .webassets-cache
+
+# Claude Code
+.claude/settings.local.json
