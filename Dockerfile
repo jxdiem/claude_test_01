@@ -37,9 +37,6 @@ USER appuser
 ENV PATH=/home/appuser/.local/bin:$PATH \
     DATA_DIR=/data
 
-# Create volume for database persistence
-VOLUME ["/data"]
-
 # Expose port
 EXPOSE 5000
 
