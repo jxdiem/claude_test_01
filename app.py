@@ -4,7 +4,10 @@ from datetime import datetime
 import os
 
 app = Flask(__name__)
-DATABASE = 'farm_management.db'
+
+# Database path - use /data in production for volume persistence
+DATA_DIR = os.getenv('DATA_DIR', '.')
+DATABASE = os.path.join(DATA_DIR, 'farm_management.db')
 
 def get_db_connection():
     """Create a database connection"""
@@ -194,6 +197,18 @@ def init_db():
 def menu():
     """Render the main menu page"""
     return render_template('menu.html')
+
+@app.route('/health')
+def health():
+    """Health check endpoint for monitoring"""
+    try:
+        # Test database connectivity
+        conn = get_db_connection()
+        conn.execute('SELECT 1').fetchone()
+        conn.close()
+        return jsonify({'status': 'healthy', 'database': 'connected'}), 200
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
 # ============= ROUTES NUMBER APP =============
 

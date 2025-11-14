@@ -1,0 +1,35 @@
+services:
+  # Web Service
+  - type: web
+    name: farm-management-app
+    runtime: docker
+    region: frankfurt  # Cambia se preferisci altra region
+    plan: free
+
+    # Docker configuration
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    # Health check
+    healthCheckPath: /health
+
+    # Environment variables
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 5000
+
+    # Persistent disk for SQLite database
+    disk:
+      name: farm-data
+      mountPath: /data
+      sizeGB: 1  # Free tier allows up to 1GB
+
+    # Auto-deploy on push to main
+    autoDeploy: true
+
+    # Branch to deploy
+    branch: main
