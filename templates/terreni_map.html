@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Terreni - Mappa Interattiva</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(-5px);
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .controls h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .terreni-list {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .terreno-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .terreno-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .terreno-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .terreno-item h4 {
+            margin-bottom: 5px;
+        }
+
+        .terreno-item p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .info-box strong {
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/farm" class="back-link">← Torna al Dashboard</a>
+
+        <h1>🗺️ Gestione Terreni - Mappa Interattiva</h1>
+
+        <div class="info-box">
+            <strong>Istruzioni:</strong> Usa gli strumenti sulla mappa per disegnare i tuoi appezzamenti. Puoi disegnare poligoni, modificarli e eliminarli. I dati vengono salvati automaticamente.
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div class="controls">
+            <h3>Dettagli Appezzamento</h3>
+            <form id="terreno-form">
+                <div class="form-group">
+                    <label for="nome">Nome Appezzamento *</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Es: Campo Nord">
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo_terreno">Tipo Terreno</label>
+                    <select id="tipo_terreno" name="tipo_terreno">
+                        <option value="">Seleziona...</option>
+                        <option value="Seminativo">Seminativo</option>
+                        <option value="Vigneto">Vigneto</option>
+                        <option value="Oliveto">Oliveto</option>
+                        <option value="Frutteto">Frutteto</option>
+                        <option value="Pascolo">Pascolo</option>
+                        <option value="Bosco">Bosco</option>
+                        <option value="Altro">Altro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="superficie">Superficie (ettari)</label>
+                    <input type="number" id="superficie" name="superficie" step="0.01" placeholder="Calcolata automaticamente dalla geometria">
+                </div>
+
+                <div class="form-group">
+                    <label for="foglio">Foglio Catastale</label>
+                    <input type="text" id="foglio" name="foglio" placeholder="Es: 12">
+                </div>
+
+                <div class="form-group">
+                    <label for="particella">Particella</label>
+                    <input type="text" id="particella" name="particella" placeholder="Es: 456">
+                </div>
+
+                <div class="form-group">
+                    <label for="note">Note</label>
+                    <textarea id="note" name="note" rows="3" placeholder="Note aggiuntive..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">💾 Salva Appezzamento</button>
+            </form>
+        </div>
+
+        <div class="terreni-list">
+            <h3>Appezzamenti Salvati</h3>
+            <div id="terreni-container"></div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Draw JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <!-- Turf.js for area calculation -->
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <script>
+        // Initialize map centered on Italy
+        const map = L.map('map').setView([41.9028, 12.4964], 6);
+
+        // Base layers
+        const baseLayers = {
+            'Stradale (OpenStreetMap)': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }),
+            'Satellite (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 19,
+                attribution: '© Esri'
+            }),
+            'Topografico (OpenTopoMap)': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                maxZoom: 17,
+                attribution: '© OpenTopoMap contributors'
+            }),
+            'Stradale con Etichette': L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors, Tiles courtesy of Humanitarian OpenStreetMap Team'
+            })
+        };
+
+        // Add default layer
+        baseLayers['Stradale (OpenStreetMap)'].addTo(map);
+
+        // Add layer control
+        L.control.layers(baseLayers).addTo(map);
+
+        // FeatureGroup to store drawn items
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        // Drawing controls
+        const drawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polygon: {
+                    allowIntersection: false,
+                    shapeOptions: {
+                        color: '#667eea',
+                        fillOpacity: 0.3
+                    }
+                },
+                polyline: false,
+                rectangle: {
+                    shapeOptions: {
+                        color: '#667eea',
+                        fillOpacity: 0.3
+                    }
+                },
+                circle: false,
+                marker: false,
+                circlemarker: false
+            },
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            }
+        });
+        map.addControl(drawControl);
+
+        let currentGeometry = null;
+
+        // Handle drawing
+        map.on(L.Draw.Event.CREATED, function (e) {
+            const layer = e.layer;
+
+            // Remove previous drawing
+            drawnItems.clearLayers();
+
+            drawnItems.addLayer(layer);
+            currentGeometry = layer.toGeoJSON();
+
+            // Calculate area
+            const area = turf.area(currentGeometry);
+            const areaHectares = (area / 10000).toFixed(2); // Convert m² to hectares
+
+            document.getElementById('superficie').value = areaHectares;
+
+            // Fit map to drawn shape
+            map.fitBounds(layer.getBounds());
+        });
+
+        // Handle editing
+        map.on(L.Draw.Event.EDITED, function (e) {
+            const layers = e.layers;
+            layers.eachLayer(function (layer) {
+                currentGeometry = layer.toGeoJSON();
+
+                // Recalculate area
+                const area = turf.area(currentGeometry);
+                const areaHectares = (area / 10000).toFixed(2);
+                document.getElementById('superficie').value = areaHectares;
+            });
+        });
+
+        // Handle deletion
+        map.on(L.Draw.Event.DELETED, function (e) {
+            currentGeometry = null;
+            document.getElementById('superficie').value = '';
+        });
+
+        // Form submission
+        document.getElementById('terreno-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentGeometry) {
+                alert('Disegna prima un appezzamento sulla mappa!');
+                return;
+            }
+
+            const formData = {
+                nome: document.getElementById('nome').value,
+                tipo_terreno: document.getElementById('tipo_terreno').value,
+                superficie_ettari: parseFloat(document.getElementById('superficie').value),
+                foglio: document.getElementById('foglio').value,
+                particella: document.getElementById('particella').value,
+                geometria: currentGeometry,
+                note: document.getElementById('note').value
+            };
+
+            try {
+                const response = await fetch('/api/terreni', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Appezzamento salvato con successo!');
+                    document.getElementById('terreno-form').reset();
+                    drawnItems.clearLayers();
+                    currentGeometry = null;
+                    loadTerreni();
+                } else {
+                    alert('❌ Errore nel salvataggio');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Errore di connessione');
+            }
+        });
+
+        // Load and display terreni
+        async function loadTerreni() {
+            try {
+                const response = await fetch('/api/terreni');
+                const terreni = await response.json();
+
+                const container = document.getElementById('terreni-container');
+                container.innerHTML = '';
+
+                if (terreni.length === 0) {
+                    container.innerHTML = '<p style="color: #999;">Nessun appezzamento salvato. Disegna il primo sulla mappa!</p>';
+                    return;
+                }
+
+                terreni.forEach(terreno => {
+                    const div = document.createElement('div');
+                    div.className = 'terreno-item';
+                    div.innerHTML = `
+                        <h4>${terreno.nome}</h4>
+                        <p>
+                            ${terreno.tipo_terreno || 'N/A'} •
+                            ${terreno.superficie_ettari ? terreno.superficie_ettari + ' ha' : 'N/A'}
+                            ${terreno.foglio ? ' • Foglio ' + terreno.foglio : ''}
+                            ${terreno.particella ? ' • Part. ' + terreno.particella : ''}
+                        </p>
+                    `;
+
+                    // Show on map when clicked
+                    div.addEventListener('click', () => {
+                        showTerrenoOnMap(terreno);
+                    });
+
+                    container.appendChild(div);
+
+                    // Also add to map
+                    if (terreno.geometria) {
+                        try {
+                            const geojson = JSON.parse(terreno.geometria);
+                            const layer = L.geoJSON(geojson, {
+                                style: {
+                                    color: '#764ba2',
+                                    fillOpacity: 0.2
+                                }
+                            }).bindPopup(`
+                                <strong>${terreno.nome}</strong><br>
+                                ${terreno.superficie_ettari ? terreno.superficie_ettari + ' ha' : ''}
+                            `);
+                            layer.addTo(map);
+                        } catch (e) {
+                            console.error('Error parsing geometry:', e);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading terreni:', error);
+            }
+        }
+
+        function showTerrenoOnMap(terreno) {
+            if (!terreno.geometria) return;
+
+            try {
+                const geojson = JSON.parse(terreno.geometria);
+                const layer = L.geoJSON(geojson);
+                map.fitBounds(layer.getBounds());
+                layer.openPopup();
+            } catch (e) {
+                console.error('Error showing terreno:', e);
+            }
+        }
+
+        // Load terreni on page load
+        loadTerreni();
+    </script>
+</body>
+</html>

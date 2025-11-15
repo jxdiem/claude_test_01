@@ -35,12 +35,13 @@ def init_db():
         CREATE TABLE IF NOT EXISTS terreni (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome VARCHAR(100) NOT NULL,
-            superficie_ettari REAL NOT NULL,
+            superficie_ettari REAL,
             tipo_terreno VARCHAR(50),
             ubicazione VARCHAR(200),
             foglio VARCHAR(20),
             particella VARCHAR(20),
             subalterno VARCHAR(20),
+            geometria TEXT,
             note TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -258,6 +259,11 @@ def farm_index():
     """Render the farm management main page"""
     return render_template('farm.html')
 
+@app.route('/terreni')
+def terreni_map():
+    """Render the interactive map for terreni management"""
+    return render_template('terreni_map.html')
+
 # ===== TERRENI ROUTES =====
 
 @app.route('/api/terreni', methods=['GET'])
@@ -269,14 +275,19 @@ def get_terreni():
 
 @app.route('/api/terreni', methods=['POST'])
 def add_terreno():
+    import json
     data = request.get_json()
     conn = get_db_connection()
+
+    # Convert geometria to JSON string if present
+    geometria_json = json.dumps(data.get('geometria')) if data.get('geometria') else None
+
     conn.execute('''INSERT INTO terreni
-        (nome, superficie_ettari, tipo_terreno, ubicazione, foglio, particella, subalterno, note)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-        (data['nome'], data['superficie_ettari'], data.get('tipo_terreno'),
+        (nome, superficie_ettari, tipo_terreno, ubicazione, foglio, particella, subalterno, geometria, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (data['nome'], data.get('superficie_ettari'), data.get('tipo_terreno'),
          data.get('ubicazione'), data.get('foglio'), data.get('particella'),
-         data.get('subalterno'), data.get('note')))
+         data.get('subalterno'), geometria_json, data.get('note')))
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'message': 'Terreno aggiunto con successo'})
