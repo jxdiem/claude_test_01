@@ -487,8 +487,60 @@
             }
         }
 
+        // Check if specific terreno ID is in URL and zoom to it
+        function checkURLParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const terrenoId = urlParams.get('id');
+
+            if (terrenoId) {
+                // Wait for terreni to load, then find and zoom to specific one
+                setTimeout(async () => {
+                    try {
+                        const response = await fetch('/api/terreni');
+                        const terreni = await response.json();
+                        const terreno = terreni.find(t => t.id == terrenoId);
+
+                        if (terreno && terreno.geometria) {
+                            const geojson = JSON.parse(terreno.geometria);
+                            const layer = L.geoJSON(geojson);
+
+                            // Zoom to this terreno
+                            map.fitBounds(layer.getBounds());
+
+                            // Highlight it temporarily
+                            const highlightLayer = L.geoJSON(geojson, {
+                                style: {
+                                    color: '#ff6b6b',
+                                    fillColor: '#ff6b6b',
+                                    fillOpacity: 0.5,
+                                    weight: 3
+                                }
+                            }).addTo(map);
+
+                            // Show popup
+                            highlightLayer.bindPopup(`
+                                <strong>${terreno.nome}</strong><br>
+                                ${terreno.tipo_terreno || 'N/A'}<br>
+                                ${terreno.superficie_ettari ? terreno.superficie_ettari + ' ha' : 'N/A'}
+                            `).openPopup();
+
+                            // Remove highlight after 3 seconds
+                            setTimeout(() => {
+                                map.removeLayer(highlightLayer);
+                            }, 3000);
+                        }
+                    } catch (e) {
+                        console.error('Error loading terreno from URL:', e);
+                    }
+                }, 500);
+            }
+        }
+
         // Load terreni on page load
         loadTerreni();
+
+        // Check URL params after loading
+        checkURLParams();
     </script>
 </body>
 </html>

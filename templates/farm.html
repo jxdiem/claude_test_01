@@ -500,9 +500,9 @@
                 <span class="icon">📊</span>
                 <span>Dashboard</span>
             </div>
-            <div class="nav-item" onclick="window.location.href='/terreni'">
+            <div class="nav-item" data-section="terreni">
                 <span class="icon">🗺️</span>
-                <span>Terreni (Mappa)</span>
+                <span>Terreni</span>
             </div>
             <div class="nav-item" data-section="trattori">
                 <span class="icon">🚜</span>
@@ -556,15 +556,15 @@
         <!-- TERRENI SECTION -->
         <div class="section" id="terreni">
             <div class="page-header">
-                <h2>Gestione Terreni</h2>
-                <p>Amministra gli appezzamenti e i terreni aziendali</p>
+                <h2>🗺️ Gestione Terreni</h2>
+                <p>Visualizza e gestisci i tuoi appezzamenti sulla mappa interattiva</p>
             </div>
 
             <div class="data-section">
                 <div class="section-header">
-                    <h3>Elenco Terreni</h3>
-                    <button class="btn btn-primary" onclick="openModal('terreniModal')">
-                        <span>+</span> Aggiungi Terreno
+                    <h3>Elenco Appezzamenti</h3>
+                    <button class="btn btn-primary" onclick="window.location.href='/terreni'">
+                        <span>🗺️</span> Apri Mappa Interattiva
                     </button>
                 </div>
                 <div id="terreniTable"></div>
@@ -1568,21 +1568,25 @@
                 const container = document.getElementById('terreniTable');
 
                 if (terreni.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><div class="icon">🌾</div><p>Nessun terreno registrato. Aggiungi il primo terreno!</p></div>';
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🌾</div><p>Nessun terreno registrato. Usa la mappa interattiva per disegnare il tuo primo appezzamento!</p></div>';
                     return;
                 }
 
-                let html = '<table class="data-table"><thead><tr><th>Nome</th><th>Superficie</th><th>Tipo</th><th>Ubicazione</th><th>Catasto</th><th>Azioni</th></tr></thead><tbody>';
+                let html = '<table class="data-table"><thead><tr><th>Nome</th><th>Superficie</th><th>Tipo</th><th>Catasto</th><th>Geometria</th><th>Azioni</th></tr></thead><tbody>';
 
                 terreni.forEach(t => {
+                    const hasGeometry = t.geometria && t.geometria !== 'null';
                     html += `
                         <tr>
                             <td><strong>${t.nome}</strong></td>
-                            <td>${t.superficie_ettari} ha</td>
+                            <td>${t.superficie_ettari ? t.superficie_ettari + ' ha' : '-'}</td>
                             <td>${t.tipo_terreno || '-'}</td>
-                            <td>${t.ubicazione || '-'}</td>
                             <td>${t.foglio || '-'} / ${t.particella || '-'}</td>
-                            <td><button class="btn btn-danger" onclick="deleteItem('/api/terreni', ${t.id}, 'terreni')">Elimina</button></td>
+                            <td>${hasGeometry ? '✅ Mappato' : '❌ No mappa'}</td>
+                            <td>
+                                ${hasGeometry ? `<button class="btn btn-primary" onclick="window.location.href='/terreni?id=${t.id}'" style="margin-right: 5px;">🗺️ Vedi su Mappa</button>` : ''}
+                                <button class="btn btn-danger" onclick="deleteItem('/api/terreni', ${t.id}, 'terreni')">Elimina</button>
+                            </td>
                         </tr>
                     `;
                 });
