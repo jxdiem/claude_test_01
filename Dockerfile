@@ -19,25 +19,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN useradd -m -u 1000 appuser && \
-    mkdir -p /data && \
-    chown -R appuser:appuser /app /data
-
 # Copy Python dependencies from builder
-COPY --from=builder /root/.local /home/appuser/.local
+COPY --from=builder /root/.local /root/.local
 
 # Copy application code
-COPY --chown=appuser:appuser . .
+COPY . .
 
 # Make start script executable
 RUN chmod +x start.sh
 
-# Switch to non-root user
-USER appuser
-
 # Add local bin to PATH and set data directory
-ENV PATH=/home/appuser/.local/bin:$PATH \
+ENV PATH=/root/.local/bin:$PATH \
     DATA_DIR=/data
 
 # Expose port
