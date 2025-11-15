@@ -292,6 +292,10 @@
         const drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
+        // Layer to store all saved terreni (not editable, just for display)
+        const savedTerreniLayer = new L.FeatureGroup();
+        map.addLayer(savedTerreniLayer);
+
         // Drawing controls
         const drawControl = new L.Control.Draw({
             position: 'topright',
@@ -408,6 +412,9 @@
         // Load and display terreni
         async function loadTerreni() {
             try {
+                // Clear existing saved terreni from map
+                savedTerreniLayer.clearLayers();
+
                 const response = await fetch('/api/terreni');
                 const terreni = await response.json();
 
@@ -439,22 +446,26 @@
 
                     container.appendChild(div);
 
-                    // Also add to map
+                    // Also add to saved terreni layer
                     if (terreno.geometria) {
                         try {
                             const geojson = JSON.parse(terreno.geometria);
                             const layer = L.geoJSON(geojson, {
                                 style: {
                                     color: '#764ba2',
-                                    fillOpacity: 0.2
+                                    fillColor: '#764ba2',
+                                    fillOpacity: 0.3,
+                                    weight: 2
                                 }
                             }).bindPopup(`
                                 <strong>${terreno.nome}</strong><br>
-                                ${terreno.superficie_ettari ? terreno.superficie_ettari + ' ha' : ''}
+                                ${terreno.tipo_terreno || 'N/A'}<br>
+                                ${terreno.superficie_ettari ? terreno.superficie_ettari + ' ha' : 'N/A'}
                             `);
-                            layer.addTo(map);
+                            savedTerreniLayer.addLayer(layer);
                         } catch (e) {
-                            console.error('Error parsing geometry:', e);
+                            console.error('Error parsing geometry for terreno:', terreno.nome, e);
+                            console.log('Geometria problematica:', terreno.geometria);
                         }
                     }
                 });
